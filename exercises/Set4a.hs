@@ -187,6 +187,11 @@ freqs xs = todo
 --     ==> fromList [("Bob",100),("Mike",50)]
 --   transfer "Bob" "Lisa" 20 bank
 --     ==> fromList [("Bob",100),("Mike",50)]
+
+
+
+
+
 --   transfer "Lisa" "Mike" 20 bank
 --     ==> fromList [("Bob",100),("Mike",50)]
 
