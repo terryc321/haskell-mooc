@@ -84,9 +84,17 @@ mapMaybe2 f (Just x) (Just y) = Just (f x y)
 palindromeHalfs :: [String] -> [String]
 palindromeHalfs xs = map firstHalf (filter palindrome xs)
 
-firstHalf = todo
+-- took a while 
+firstHalf :: String -> String 
+firstHalf s = let len = length s
+              in if len == 0 then ""
+                 else if len == 1 then s
+                      else if odd len then take (len `div` 2 + 1) s
+                           else take (len `div` 2) s
+                                
 
-palindrome = todo
+palindrome :: String -> Bool 
+palindrome s = s == reverse s 
 
 ------------------------------------------------------------------------------
 -- Ex 5: Implement a function capitalize that takes in a string and
@@ -104,7 +112,7 @@ palindrome = todo
 --   capitalize "goodbye cruel world" ==> "Goodbye Cruel World"
 
 capitalize :: String -> String
-capitalize = todo
+capitalize s = unwords (map (\w -> ((toUpper . head) w) : (tail w)) (words s ))
 
 ------------------------------------------------------------------------------
 -- Ex 6: powers k max should return all the powers of k that are less
@@ -121,7 +129,7 @@ capitalize = todo
 --   * the function takeWhile
 
 powers :: Int -> Int -> [Int]
-powers k max = todo
+powers k max = takeWhile (\n -> n <= max) [k ^ n | n <- [0 .. max]]
 
 ------------------------------------------------------------------------------
 -- Ex 7: implement a functional while loop. While should be a function
@@ -144,7 +152,8 @@ powers k max = todo
 --     ==> Avvt
 
 while :: (a->Bool) -> (a->a) -> a -> a
-while check update value = todo
+while check update value = if check value then while check update (update value)
+                           else value 
 
 ------------------------------------------------------------------------------
 -- Ex 8: another version of a while loop. This time, the check
@@ -164,7 +173,10 @@ while check update value = todo
 -- Hint! Remember the case-of expression from lecture 2.
 
 whileRight :: (a -> Either b a) -> a -> b
-whileRight check x = todo
+whileRight check x = case check x of
+  Left r -> r
+  Right r -> whileRight check r
+  
 
 -- for the whileRight examples:
 -- step k x doubles x if it's less than k
@@ -188,7 +200,7 @@ bomb x = Right (x-1)
 -- Hint! This is a great use for list comprehensions
 
 joinToLength :: Int -> [String] -> [String]
-joinToLength = todo
+joinToLength n xs = [ first ++ last | first <- xs, last <- xs , length (first ++ last) == n  ]
 
 ------------------------------------------------------------------------------
 -- Ex 10: implement the operator +|+ that returns a list with the first
@@ -201,7 +213,11 @@ joinToLength = todo
 --   [1,2,3] +|+ [4,5,6]  ==> [1,4]
 --   [] +|+ [True]        ==> [True]
 --   [] +|+ []            ==> []
-
+(+|+) :: [a] -> [a] -> [a]
+[] +|+ [] = []
+[] +|+ ys = [head ys]
+xs +|+ [] = [head xs]
+xs +|+ ys = [head xs, head ys]
 
 ------------------------------------------------------------------------------
 -- Ex 11: remember the lectureParticipants example from Lecture 2? We
