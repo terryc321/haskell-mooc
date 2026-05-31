@@ -35,7 +35,15 @@ import Data.Array
 -- you remove the Eq a => constraint from the type!
 
 allEqual :: Eq a => [a] -> Bool
-allEqual xs = todo
+allEqual [] = True
+allEqual [x] = True
+allEqual (h : t) = helper h t
+ where helper h [] = True
+       helper h (h2 : t) = if h == h2 then helper h t
+                           else False
+                                
+
+
 
 ------------------------------------------------------------------------------
 -- Ex 2: implement the function distinct which returns True if all
@@ -50,7 +58,14 @@ allEqual xs = todo
 --   distinct [1,2] ==> True
 
 distinct :: Eq a => [a] -> Bool
-distinct = todo
+distinct [] = True
+distinct [x] = True
+distinct (h : t) = let out = helper h t
+  in if out then distinct t
+     else False 
+ where helper h [] = True
+       helper h (h2 : t) = if h /= h2 then helper h t
+                           else False 
 
 ------------------------------------------------------------------------------
 -- Ex 3: implement the function middle that returns the middle value
@@ -62,8 +77,16 @@ distinct = todo
 -- Examples:
 --   middle 'b' 'a' 'c'  ==> 'b'
 --   middle 1 7 3        ==> 3
+-- a b c
+-- a c b
+-- b a c
+-- b c a
+-- c a b
+-- c b a 
 
-middle = todo
+middle :: Ord a => a -> a -> a -> a 
+middle a b c = (sort [a,b,c]) !! 1 
+  
 
 ------------------------------------------------------------------------------
 -- Ex 4: return the range of an input list, that is, the difference
@@ -78,8 +101,15 @@ middle = todo
 --   rangeOf [4,2,1,3]          ==> 3
 --   rangeOf [1.5,1.0,1.1,1.2]  ==> 0.5
 
-rangeOf :: [a] -> a
-rangeOf = todo
+rangeOf :: (Num a, Ord a)  => [a] -> a
+rangeOf xs =
+  let s = sort xs
+  in let low = head s
+         high = last s
+     in (high - low)
+        
+           
+                
 
 ------------------------------------------------------------------------------
 -- Ex 5: given a (non-empty) list of (non-empty) lists, return the longest
@@ -97,8 +127,15 @@ rangeOf = todo
 --   longest [[1,2,3],[4,5],[6]] ==> [1,2,3]
 --   longest ["bcd","def","ab"] ==> "bcd"
 
-longest = todo
-
+longest xs = helper xs []
+ where helper [] r = r
+       helper (h : t) r =
+         if length h > length r then helper t h
+         else if length h == length r then if (head h) < (head r) then helper t h
+                                           else helper t r
+         else helper t r
+         
+  
 ------------------------------------------------------------------------------
 -- Ex 6: Implement the function incrementKey, that takes a list of
 -- (key,value) pairs, and adds 1 to all the values that have the given key.
