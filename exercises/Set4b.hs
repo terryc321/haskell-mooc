@@ -18,10 +18,15 @@ import Mooc.Todo
 --   countNothings []  ==>  0
 --   countNothings [Just 1, Nothing, Just 3, Nothing]  ==>  2
 
-countNothings :: [Maybe a] -> Int
-countNothings xs = foldr countHelper 0 xs
+countNothings :: [Maybe Int] -> Int
+countNothings xs = foldr (countHelper) 0 xs
 
-countHelper = todo
+--- ok i get it , count the nothings 
+countHelper :: Maybe Int -> Int -> Int
+countHelper s acc = case s of
+                      Nothing -> acc + 1
+                      Just v -> acc 
+              
 
 ------------------------------------------------------------------------------
 -- Ex 2: myMaximum with a fold. Just like in the previous exercise,
@@ -35,7 +40,8 @@ myMaximum :: [Int] -> Int
 myMaximum [] = 0
 myMaximum (x:xs) = foldr maxHelper x xs
 
-maxHelper = todo
+--maxHelper s acc = if s > acc then s else acc
+maxHelper = max 
 
 ------------------------------------------------------------------------------
 -- Ex 3: compute the sum and length of a list with a fold. Define
@@ -52,8 +58,9 @@ maxHelper = todo
 sumAndLength :: [Double] -> (Double,Int)
 sumAndLength xs = foldr slHelper slStart xs
 
-slStart = todo
-slHelper = todo
+slStart = (0.0,0)
+slHelper s acc = let (tot,n) = acc
+                 in (tot + s , n + 1) 
 
 ------------------------------------------------------------------------------
 -- Ex 4: implement concat with a fold. Define concatHelper and
@@ -67,8 +74,8 @@ slHelper = todo
 myConcat :: [[a]] -> [a]
 myConcat xs = foldr concatHelper concatStart xs
 
-concatStart = todo
-concatHelper = todo
+concatStart = []
+concatHelper s acc = s ++ acc 
 
 ------------------------------------------------------------------------------
 -- Ex 5: get all occurrences of the largest number in a list with a
@@ -82,7 +89,12 @@ concatHelper = todo
 largest :: [Int] -> [Int]
 largest xs = foldr largestHelper [] xs
 
-largestHelper = todo
+largestHelper s [] = [s]
+largestHelper s (h : t) = if s > h then [s]
+                          else if s == h then s : h : t
+                               else h : t
+                                    
+
 
 
 ------------------------------------------------------------------------------
@@ -98,7 +110,23 @@ largestHelper = todo
 myHead :: [a] -> Maybe a
 myHead xs = foldr headHelper Nothing xs
 
-headHelper = todo
+headHelper :: a -> Maybe a -> Maybe a 
+headHelper = \ a b -> Just a
+  
+-- headHelper v Nothing = Just v
+-- headHelper v _ = Just v
+
+-- foldr (#) u [x1, x2, ..., xn] = x1 # (x2 # (...(xn # u)...))
+-- in the tree
+-- winds up being right leaning tree
+--   #
+--  / \
+-- 1   #
+--    / \
+--   2   u   where foldr (#) u  , if u always picks first value , get leaf 1 eventually
+-- more work , why not just head ?
+-- let # = \ a b = a 
+
 
 ------------------------------------------------------------------------------
 -- Ex 7: get the last element of a list with a fold. Define lasthelper
@@ -113,5 +141,14 @@ headHelper = todo
 myLast :: [a] -> Maybe a
 myLast xs = foldr lastHelper Nothing xs
 
-lastHelper = todo
+-- where we pick which leg to take 
+--   # 1 (Just 2) --> Just 2 
+--  / \
+-- 1   # --> Just 2
+--    / \
+--   2  Init   where foldr (#) Init  ,  Initial value Init 
+
+lastHelper :: a -> Maybe a -> Maybe a 
+lastHelper a Nothing = Just a  -- bottom right leg 
+lastHelper a (Just v) = Just v 
 
