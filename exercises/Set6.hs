@@ -204,7 +204,9 @@ data RationalNumber = RationalNumber Integer Integer
   deriving Show
 
 instance Eq RationalNumber where
-  p == q = todo
+  (RationalNumber a b) == (RationalNumber c d) = (a*d) == (b*c)
+
+-- ok passed -- 
 
 ------------------------------------------------------------------------------
 -- Ex 9: implement the function simplify, which simplifies a rational
@@ -224,7 +226,13 @@ instance Eq RationalNumber where
 -- Hint: Remember the function gcd?
 
 simplify :: RationalNumber -> RationalNumber
-simplify p = todo
+simplify (RationalNumber ca cb) =
+  let c = gcd ca cb
+  in RationalNumber (ca `div` c) (cb `div` c)
+
+
+-- ok - passed   
+  
 
 ------------------------------------------------------------------------------
 -- Ex 10: implement the typeclass Num for RationalNumber. The results
@@ -245,12 +253,24 @@ simplify p = todo
 --   signum (RationalNumber 0 2)             ==> RationalNumber 0 1
 
 instance Num RationalNumber where
-  p + q = todo
-  p * q = todo
-  abs q = todo
-  signum q = todo
-  fromInteger x = todo
-  negate q = todo
+  (RationalNumber a b) + (RationalNumber c d) = simplify (RationalNumber (a*d + c*b) (b*d))
+  (RationalNumber a b) * (RationalNumber c d) = simplify (RationalNumber (a*c) (b*d))
+  abs (RationalNumber a b) = simplify (RationalNumber (abs a) (abs b))
+  signum (RationalNumber a b) = case (signum a,signum b) of
+                                  (-1,-1) -> 1
+                                  (0,-1) -> -1 
+                                  (1,-1) -> -1 
+                                  (-1,0) -> -1 -- infinity ?
+                                  (0,0)  -> 0 
+                                  (1,0)  -> 0 
+                                  (-1,1) -> -1 
+                                  (0,1)  -> 0 
+                                  (1,1)  -> 1
+  fromInteger x = RationalNumber x 1  
+  negate (RationalNumber a b) = RationalNumber (negate a) b
+
+-- ok -- thanks that was done -- phew 
+-- ok -- passed 
 
 ------------------------------------------------------------------------------
 -- Ex 11: a class for adding things. Define a class Addable with a
@@ -265,7 +285,34 @@ instance Num RationalNumber where
 --   add [1,2] [3,4]        ==>  [1,2,3,4]
 --   add zero [True,False]  ==>  [True,False]
 
+class Addable a where
+  add :: a -> a -> a
+  zero :: a
 
+-- instance for Int   
+
+instance Addable Int  where
+  zero = 0
+  add = (+)
+  -- add zero zero = 0
+  -- add zero x = x
+  -- add x zero = x
+
+-- add zero (3 ::Int)
+-- 3 
+  
+instance Addable Bool  where
+  zero = False 
+  add = (||)
+
+-- > add True False 
+-- True
+
+-- can i add True 3  ?? what does that even mean ??
+
+
+  
+  
 ------------------------------------------------------------------------------
 -- Ex 12: cycling. Implement a type class Cycle that contains a
 -- function `step` that cycles through the values of the type.
