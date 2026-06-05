@@ -4,17 +4,24 @@ module Set6 where
 
 import Mooc.Todo
 import Data.Char (toLower)
+import GHC.Real (RealFrac(truncate))
+import Data.Fixed (E0)
 
 ------------------------------------------------------------------------------
 -- Ex 1: define an Eq instance for the type Country below. You'll need
 -- to use pattern matching.
 
-data Country = Finland | Switzerland | Norway
+data Country = Finland | Switzerland | Norway 
   deriving Show
 
 instance Eq Country where
-  (==) = todo
-
+ Finland == Finland = True
+ Switzerland == Switzerland = True
+ Norway == Norway = True
+ _ == _ = False
+ 
+-- ok - passed 
+ 
 ------------------------------------------------------------------------------
 -- Ex 2: implement an Ord instance for Country so that
 --   Finland <= Norway <= Switzerland
@@ -22,10 +29,25 @@ instance Eq Country where
 -- Remember minimal complete definitions!
 
 instance Ord Country where
-  compare = todo -- implement me?
-  (<=) = todo -- and me?
-  min = todo -- and me?
-  max = todo -- and me?
+  compare Finland Finland = EQ
+  compare Finland Norway = LT
+  compare Finland Switzerland = EQ
+  
+  compare Norway Finland = GT
+  compare Norway Norway = EQ
+  compare Norway Switzerland = LT
+  
+  compare Switzerland Finland = GT
+  compare Switzerland Norway = GT
+  compare Switzerland Switzerland = EQ 
+
+  -- once compare is defined no need to define < > <= >= min or max !
+  -- (<=) = todo -- and me?
+  -- min = todo -- and me?
+  -- max = todo -- and me?
+
+-- ok - passed 
+
 
 ------------------------------------------------------------------------------
 -- Ex 3: Implement an Eq instance for the type Name which contains a String.
@@ -41,7 +63,9 @@ data Name = Name String
   deriving Show
 
 instance Eq Name where
-  (==) = todo
+  s == t = map toLower (show s) == map toLower (show t)
+
+-- ok - passed 
 
 ------------------------------------------------------------------------------
 -- Ex 4: here is a list type parameterized over the type it contains.
@@ -52,10 +76,17 @@ instance Eq Name where
 -- remove it?
 
 data List a = Empty | LNode a (List a)
-  deriving Show
+  deriving (Show)
 
 instance Eq a => Eq (List a) where
-  (==) = todo
+  Empty == Empty = True
+  (LNode s v) == (LNode s2 v2) = s == s2 && v == v2 
+  _ == _ = False 
+
+-- :t LNode 3 Empty  :: List Int 
+-- LNode 3 Empty  :: List Int :: List Int  
+
+-- ok - passed 
 
 ------------------------------------------------------------------------------
 -- Ex 5: below you'll find two datatypes, Egg and Milk. Implement a
@@ -72,9 +103,32 @@ instance Eq a => Eq (List a) where
 
 data Egg = ChickenEgg | ChocolateEgg
   deriving Show
+
 data Milk = Milk Int -- amount in litres
   deriving Show
 
+class Price a where
+  price :: a -> Int
+
+instance Price (Egg)  where
+  price ChickenEgg = 20
+  price ChocolateEgg = 30 
+
+instance Price (Milk)  where
+  price (Milk n) = 15 * n 
+
+-- implement a type class containing a price function .
+-- interesting never heard of type class before or functions which operate on them
+-- so we can have different behaviour depending on actual datatype
+
+-- λ> price ChickenEgg  -- what is the price of a chicken egg ? 
+-- 20
+-- λ> price ChocolateEgg  -- what is the price of a chocolate egg ?
+-- 30
+-- λ> price (Milk 5)  -- what is the price of 5 litres of milk ?
+-- 75
+
+-- ok - passed 
 
 ------------------------------------------------------------------------------
 -- Ex 6: define the necessary instance hierarchy in order to be able
@@ -84,6 +138,28 @@ data Milk = Milk Int -- amount in litres
 -- price [Milk 1, Milk 2]  ==> 45
 -- price [Just ChocolateEgg, Nothing, Just ChickenEgg]  ==> 50
 -- price [Nothing, Nothing, Just (Milk 1), Just (Milk 2)]  ==> 45
+
+instance Price a => Price [a] where
+  price xs = sum (map price xs)
+
+-- good - progress - we can price up a list of items 
+-- price [Milk 1 , Milk 2]
+-- 45
+-- λ> 
+
+instance Price a => Price (Maybe a) where
+  price (Just v) = price v
+  price Nothing = 0
+
+-- good - progress
+-- price (Just ChickenEgg)
+-- 20
+
+-- got tangled up in the weeds with this one 
+
+-- ok - passed
+
+
 
 
 ------------------------------------------------------------------------------
@@ -96,6 +172,13 @@ data Milk = Milk Int -- amount in litres
 data Number = Finite Integer | Infinite
   deriving (Show,Eq)
 
+instance Ord Number where
+   compare (Finite a) (Finite b) = compare a b
+   compare (Finite a) Infinite = LT
+   compare Infinite (Finite b) = GT
+   compare Infinite Infinite = EQ  -- ?
+
+-- ok -- passed --
 
 ------------------------------------------------------------------------------
 -- Ex 8: rational numbers have a numerator and a denominator that are
