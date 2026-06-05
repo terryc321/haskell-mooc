@@ -291,7 +291,7 @@ class Addable a where
 
 -- instance for Int   
 
-instance Addable Int  where
+instance Addable Integer  where
   zero = 0
   add = (+)
   -- add zero zero = 0
@@ -300,7 +300,8 @@ instance Addable Int  where
 
 -- add zero (3 ::Int)
 -- 3 
-  
+
+ 
 instance Addable Bool  where
   zero = False 
   add = (||)
@@ -308,10 +309,20 @@ instance Addable Bool  where
 -- > add True False 
 -- True
 
+
+instance Addable a => Addable [a]  where
+  zero = [] 
+  add [] [] = []
+  add a [] = a
+  add [] b = b
+  add a b = a ++ b
+  
+
+
 -- can i add True 3  ?? what does that even mean ??
 
-
-  
+-- ok -- passed --- understood less than what i probably should have 
+ 
   
 ------------------------------------------------------------------------------
 -- Ex 12: cycling. Implement a type class Cycle that contains a
@@ -343,3 +354,33 @@ data Color = Red | Green | Blue
 data Suit = Club | Spade | Diamond | Heart
   deriving (Show, Eq)
 
+class Cycle a where
+  step :: a -> a
+  stepMany :: Int -> a -> a 
+  stepMany 0 v = v -- can i declare this here ?? absolutely -- very nice 
+  stepMany n v = stepMany (n - 1) (step v)
+  
+
+instance Cycle Color  where
+  step Red = Green
+  step Green = Blue
+  step Blue = Red
+  -- stepMany 0 v = v
+  -- stepMany n v = stepMany (n - 1) (step v)
+  
+
+instance Cycle Suit where
+  step Club = Spade
+  step Spade = Diamond
+  step Diamond = Heart
+  step Heart = Club
+  step Club = Spade
+
+-- excellent
+-- ok -- passed
+-- set 6 completed
+
+
+  
+
+  
