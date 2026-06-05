@@ -7,6 +7,7 @@ import Data.List
 import Data.List.NonEmpty (NonEmpty ((:|)))
 import Data.Monoid
 import Data.Semigroup
+import GHC.RTS.Flags (ParFlags(setAffinity))
 
 ------------------------------------------------------------------------------
 -- Ex 1: you'll find below the types Time, Distance and Velocity,
@@ -242,6 +243,43 @@ eg Distance Double is a concrete type , does not need any more types to make it
 --
 -- What are the class constraints for the instances?
 
+-- mempty is the empty set
+-- <> is union between sets 
+instance Ord a => Semigroup (Set a) where
+  (Set a) <>  (Set b) = Set (union a b)
+    where union [] [] = []
+          union [] z  = z
+          union x  [] = x
+          union (h : t) (h2 : t2) = if h < h2 then h : (union t (h2 : t2))
+                                    else if h == h2 then h : (union t t2)
+                                         else h2 : (union (h : t) t2)
+
+
+instance Ord a => Monoid (Set a)  where
+   mempty = Set [] 
+
+
+{--
+data Set a = Set [a]
+  deriving (Show,Eq)
+
+==== Theory ===== 
+
+class Semigroup a where
+  -- An associative operation.
+  (<>) :: a -> a -> a
+
+
+semigroup has an associative operator <> defined
+ 1+(2+3)=(1+2)+3
+
+monoid is a semigroup with a neutral element
+class Semigroup a => Monoid a where
+  -- The neutral element
+  mempty :: a
+
+--} 
+
 
 ------------------------------------------------------------------------------
 -- Ex 8: below you'll find two different ways of representing
@@ -262,20 +300,29 @@ eg Distance Double is a concrete type , does not need any more types to make it
 --   show2 (Subtract2 2 3) ==> "2-3"
 --   show2 (Multiply2 4 5) ==> "4*5"
 
+
+-- operation 1 limited only to 1+2 , 3-4 , 5*6 cannot build complex expressions 
 data Operation1 = Add1 Int Int
                 | Subtract1 Int Int
+                | Multiply1 Int Int 
   deriving Show
 
 compute1 :: Operation1 -> Int
 compute1 (Add1 i j) = i+j
 compute1 (Subtract1 i j) = i-j
+compute1 (Multiply1 i j) = i * j 
 
 show1 :: Operation1 -> String
-show1 = todo
+show1 (Add1 i j) = (show i) ++ "+" ++ (show j)
+show1 (Subtract1 i j) = (show i) ++ "-" ++ (show j)
+show1 (Multiply1 i j) = (show i) ++ "*" ++ (show j)
+
 
 data Add2 = Add2 Int Int
   deriving Show
 data Subtract2 = Subtract2 Int Int
+  deriving Show
+data Multiply2 = Multiply2 Int Int
   deriving Show
 
 class Operation2 op where
@@ -286,6 +333,38 @@ instance Operation2 Add2 where
 
 instance Operation2 Subtract2 where
   compute2 (Subtract2 i j) = i-j
+
+instance Operation2 Multiply2 where
+  compute2 (Multiply2 i j) = i*j
+
+class Print2 a where
+  show2 :: a -> String
+
+instance Print2 Int where
+  show2 n = show n
+
+instance Print2 Float where
+  show2 n = show n
+
+instance Print2 Double where
+  show2 n = show n
+
+instance Print2 Add2 where   
+  show2 (Add2 i j) = (show i) ++ "+" ++ (show j)
+
+instance Print2 Subtract2 where   
+  show2 (Subtract2 i j) = (show i) ++ "-" ++ (show j)
+
+instance Print2 Multiply2 where   
+  show2 (Multiply2 i j) = (show i) ++ "-" ++ (show j)
+
+-- show2 (Subtract1 i j) = (show1 i) ++ "-" ++ (show1 j)
+-- show2 (Multiply1 i j) = (show1 i) ++ "*" ++ (show1 j)
+-- show2 :: Operation2 op -> String
+-- show2 x = show (compute1 x)
+
+-- bit complex , one was just simple case , second needed type classes 
+-- ok -- passed -- 
 
 
 ------------------------------------------------------------------------------
@@ -315,7 +394,22 @@ data PasswordRequirement =
   deriving Show
 
 passwordAllowed :: String -> PasswordRequirement -> Bool
-passwordAllowed = todo
+passwordAllowed s (MinimumLength n) = length s >= n
+passwordAllowed s (ContainsSome digits) = elem True (map (\d -> elem d s) digits)
+passwordAllowed s (DoesNotContain digits) = not (elem True (map (\d -> elem d s) digits))
+passwordAllowed s (And pr1 pr2) = (passwordAllowed s pr1)  && (passwordAllowed s pr2)
+passwordAllowed s (Or pr1 pr2) = (passwordAllowed s pr1) || (passwordAllowed s pr2)
+
+{--
+λ> passwordAllowed "a" (MinimumLength 1)
+True
+λ> passwordAllowed "a" (MinimumLength 2)
+False
+λ> passwordAllowed "ab" (MinimumLength 2)
+True
+--}
+
+-- ok --- passed --- 
 
 ------------------------------------------------------------------------------
 -- Ex 10: a DSL for simple arithmetic expressions with addition and
