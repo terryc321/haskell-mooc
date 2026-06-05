@@ -26,11 +26,13 @@ data Velocity = Velocity Double
 
 -- velocity computes a velocity given a distance and a time
 velocity :: Distance -> Time -> Velocity
-velocity = todo
+velocity (Distance d) (Time t) = Velocity (d / t)
 
 -- travel computes a distance given a velocity and a time
 travel :: Velocity -> Time -> Distance
-travel = todo
+travel (Velocity v) (Time t) = Distance (v * t)
+
+-- ok - passed --- 
 
 ------------------------------------------------------------------------------
 -- Ex 2: let's implement a simple Set datatype. A Set is a list of
@@ -49,15 +51,26 @@ data Set a = Set [a]
 
 -- emptySet is a set with no elements
 emptySet :: Set a
-emptySet = todo
+emptySet = Set [] 
 
 -- member tests if an element is in a set
 member :: Eq a => a -> Set a -> Bool
-member = todo
+member e (Set []) = False
+member e (Set (h : t)) =
+  if e == h
+  then True
+  else member e (Set t)
 
 -- add a member to a set
-add :: a -> Set a -> Set a
-add = todo
+add :: Ord a => a -> Set a -> Set a
+add e (Set []) = Set [e]
+add e (Set h) = let r = addHelper e h
+                in Set r
+ where addHelper e [] = [e]
+       addHelper e (h : t) = if e < h then e : h : t
+                             else if e == h then h : t 
+                                  else h : (addHelper e t)
+                                  
 
 ------------------------------------------------------------------------------
 -- Ex 3: a state machine for baking a cake. The type Event represents
@@ -72,7 +85,7 @@ add = todo
 -- so that they have the following behaviour:
 --
 --  * Baking starts in the Start state
---  * A successful cake (reperesented by the Finished value) is baked
+--  * A successful cake (represented by the Finished value) is baked
 --    by first adding eggs, then adding flour and sugar (flour and
 --    sugar can be added in which ever order), then mixing, and
 --    finally baking.
@@ -92,10 +105,36 @@ add = todo
 data Event = AddEggs | AddFlour | AddSugar | Mix | Bake
   deriving (Eq,Show)
 
-data State = Start | Error | Finished
+-- added more states to track where we are in the cooking process 
+data State = Start | Error | Finished | SEgg | SEggSugar | SEggFlour |
+             SEggSugarFlour | SEggFlourSugar | Mixed 
   deriving (Eq,Show)
 
-step = todo
+
+step :: State -> Event -> State
+step Error _ = Error
+step Finished _ = Finished 
+step Start AddEggs = SEgg
+
+step SEgg AddFlour = SEggFlour 
+step SEgg AddSugar = SEggSugar
+
+step SEggFlour AddSugar = SEggFlourSugar 
+step SEggSugar AddFlour = SEggSugarFlour 
+
+step SEggFlourSugar Mix = Mixed 
+step SEggSugarFlour Mix = Mixed
+
+step Mixed Bake = Finished
+
+step _ _ = Error
+
+-- all other cases are errors 
+-- step Start _ = Error
+-- step AddEgg _ = Error
+-- step AddedFlour _ = Error
+-- step AddedSugar _ = Error
+-- step Mixed _ = Error
 
 -- do not edit this
 bake :: [Event] -> State
@@ -115,7 +154,14 @@ bake events = go Start events
 --   average (1.0 :| [2.0,3.0])  ==>  2.0
 
 average :: Fractional a => NonEmpty a -> a
-average = todo
+average (v :| []) = v
+average (v :| z) = let numer = (v + (foldr (+) 0 z))
+                       denom = fromIntegral (1 + (length z))
+                   in numer / denom
+
+-- still dont quite understand why we need a fromIntegral ??
+-- ok - passed                       
+
 
 ------------------------------------------------------------------------------
 -- Ex 5: reverse a NonEmpty list.
@@ -123,7 +169,15 @@ average = todo
 -- PS. The Data.List.NonEmpty type has been imported for you
 
 reverseNonEmpty :: NonEmpty a -> NonEmpty a
-reverseNonEmpty = todo
+reverseNonEmpty (a :| []) = (a :| [])
+reverseNonEmpty (a :| z) = let xs = a : z
+                           in let (rh : rt) = reverse xs
+                              in (rh :| rt) 
+
+--- fairly quick 
+--- ok -- passed                                  
+
+                           
 
 ------------------------------------------------------------------------------
 -- Ex 6: implement Semigroup instances for the Distance, Time and
@@ -135,6 +189,50 @@ reverseNonEmpty = todo
 -- velocity (Distance 50 <> Distance 10) (Time 1 <> Time 2)
 --    ==> Velocity 20
 
+-- semigroup is just an associative operation
+-- associativity definition
+-- (a op b) op c = a op (b op c)
+-- order in which we do op to either side , yields a result that can op to another ??
+-- 1 + (2 + 3) = (1 + 2) + 3
+
+-- class Semigroup a where
+--   -- An associative operation.
+--   (<>) :: a -> a -> a
+
+-- data Distance = Distance Double
+--   deriving (Show,Eq)
+instance Semigroup Distance where
+  (Distance a) <>  (Distance b) = Distance (a + b) 
+
+-- data Time = Time Double
+--   deriving (Show,Eq)
+instance Semigroup Time where
+  Time x <> Time y = Time (x + y) 
+
+-- data Velocity = Velocity Double
+--   deriving (Show,Eq)
+instance Semigroup Velocity where
+  Velocity x <> Velocity y = Velocity (x + y) 
+
+-- data Sum a = Sum a
+-- instance Num a => Semigroup (Sum a) where
+--   Sum a <> Sum b  =  Sum (a+b)
+
+-- data Product a = Product a
+-- instance Num a => Semigroup (Product a) where
+--   Product a <> Product b   =  Product (a*In Haskell, Kinds are like "types for types."
+
+ {--
+Int, Double, Bool have kind * (they are concrete types).
+
+  Maybe, [] (lists), Either have kind * -> *
+(they are type constructors that need a type to become concrete).b)
+
+some figuring out about concrete type with kind *
+eg Distance Double is a concrete type , does not need any more types to make it
+--}
+
+-- ok -- passed 
 
 ------------------------------------------------------------------------------
 -- Ex 7: implement a Monoid instance for the Set type from exercise 2.
