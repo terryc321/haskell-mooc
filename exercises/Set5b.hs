@@ -171,9 +171,56 @@ cull val (Node n t1 t2) = let c1 = cull val t1
 --   isOrdered (Node 2 (Node 0 Empty
 --                             (Node 1 Empty Empty))
 --                     (Node 3 Empty Empty))   ==>   True
+--
+largest Empty = Nothing 
+largest (Node v t1 t2) = let a = largest t1
+                             b = largest t2
+                         in case (a,b) of
+                              (Nothing ,  Nothing) -> Just v
+                              (Just x  ,  Nothing) -> Just (max x v)
+                              (Nothing ,  Just y)  -> Just (max y v)
+                              (Just x  ,  Just y)  -> Just (max x (max y v))
 
+smallest Empty = Nothing 
+smallest (Node v t1 t2) = let a = smallest t1
+                              b = smallest t2
+                          in case (a,b) of
+                               (Nothing ,  Nothing) -> Just v
+                               (Just x  ,  Nothing) -> Just (min x v)
+                               (Nothing ,  Just y)  -> Just (min y v)
+                               (Just x  ,  Just y)  -> Just (min x (min y v))
+
+ 
+leftNode Empty = Nothing
+leftNode (Node _ t1 _) = Just t1
+
+rightNode Empty = Nothing
+rightNode (Node _ t1 _) = Just t1
+
+topNode Empty = Nothing 
+topNode (Node v _ _) = Just v
+
+{--
+ Node n t1 t2
+ n must be larger than all of t1
+ n must be smaller than all of t2
+ then also -- must be recursively true isOrdered for leafs t1 t2 
+--}
 isOrdered :: Ord a => Tree a -> Bool
-isOrdered = todo
+isOrdered Empty = True
+isOrdered (Node n t1 t2) = let n1 = largest t1
+                               n2 = smallest t2
+                               o1 = isOrdered t1
+                               o2 = isOrdered t2 
+                           in case (n1,n2) of
+                                (Nothing,Nothing) -> True
+                                (Just v1,Nothing) -> n > v1 && o1 && o2 
+                                (Nothing,Just v2) -> n < v2 && o1 && o2 
+                                (Just v1,Just v2) -> (n > v1) && (n < v2) && o1 && o2 
+
+-- tricky to see isOrdered also needs to be recursive 
+                                
+                                
 
 ------------------------------------------------------------------------------
 -- Ex 8: a path in a tree can be represented as a list of steps that
@@ -192,7 +239,17 @@ data Step = StepL | StepR
 --   walk [StepL,StepL] (Node 1 (Node 2 Empty Empty) Empty)  ==>  Nothing
 
 walk :: [Step] -> Tree a -> Maybe a
-walk = todo
+walk _ Empty = Nothing
+walk [] (Node v _ _) = Just v
+walk (StepL : _) (Node _ Empty _) = Nothing
+walk (StepR : _) (Node _ _ Empty) = Nothing
+walk (StepL : t) (Node _ t1 _) = walk t t1 
+walk (StepR : t) (Node _ _ t2) = walk t t2
+
+-- elegant indeed ! 
+
+
+
 
 ------------------------------------------------------------------------------
 -- Ex 9: given a tree, a path and a value, set the value at the end of
@@ -212,8 +269,18 @@ walk = todo
 --
 --   set [StepL,StepR] 1 (Node 0 Empty Empty)  ==>  (Node 0 Empty Empty)
 
+
 set :: [Step] -> a -> Tree a -> Tree a
-set path val tree = todo
+set path val tree = set2 path val tree tree 
+  where set2 _ _ Empty all = all 
+        set2 []          val (Node v t1 t2) all = Node val t1 t2
+        set2 (StepL : t) val (Node v t1 t2) all = Node v (set2 t val t1 t1) t2 
+        set2 (StepR : t) val (Node v t1 t2) all = Node v t1 (set2 t val t2 t2) 
+
+-- tricky if it runs off , we need to have entire tree available
+-- if a sustitution is made , we can use that replacement and we are done 
+
+
 
 ------------------------------------------------------------------------------
 -- Ex 10: given a value and a tree, return a path that goes from the
@@ -229,4 +296,25 @@ set path val tree = todo
 --                    (Node 5 Empty Empty))                     ==>  Just [StepL,StepR]
 
 search :: Eq a => a -> Tree a -> Maybe [Step]
-search = todo
+search val tree = let path = []
+                  in search2 val path tree
+
+search2 val path Empty = Nothing
+search2 val path (Node v t1 t2) =
+  if v == val then Just path
+  else let s1 = search2 val (path ++ [StepL]) t1
+           s2 = search2 val (path ++ [StepR]) t2
+       in case (s1,s2) of
+            (Nothing, Nothing) -> Nothing
+            (Just p , Nothing) -> Just p
+            (Nothing, Just p2) -> Just p2
+            (Just p , Just p2) -> Just p
+                        
+  
+--- it worked , huh
+-- ok . lets continue onwards and upwards
+
+
+
+  
+
