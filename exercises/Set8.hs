@@ -133,14 +133,20 @@ renderListExample = renderList justADot (9,11) (9,11)
 --      ["000000","000000","000000"]]
 
 dotAndLine :: Picture
-dotAndLine = todo
+dotAndLine = Picture f
+  where f (Coord x y) | x == 3 && y == 4 = white  -- white dot at (3,4)
+                      | y == 8 = pink             -- pink line at y = 8 
+                      | otherwise = black         -- rest of the picture is black
+
+-- ok -- passed 
+
 ------------------------------------------------------------------------------
 
 ------------------------------------------------------------------------------
 -- Ex 2: blending colors and images.
 --
 -- Implement the function blendColor that averages two Colors,
--- component by component.
+-- component by component.  - done 
 --
 -- Implement the function combine that takes a function and two images
 -- and makes a new image by applying the function to the corresponding
@@ -166,7 +172,13 @@ dotAndLine = todo
 --          ["7f0000","7f0000","7f0000"]]
 
 blendColor :: Color -> Color -> Color
-blendColor = todo
+blendColor (Color r1 g1 b1) (Color r2 g2 b2) =
+  let av x y = (x + y) `div` 2
+  in let r3 = av r1 r2
+         g3 = av g1 g2
+         b3 = av b1 b2
+     in Color r3 g3 b3 
+   
 
 combine :: (Color -> Color -> Color) -> Picture -> Picture -> Picture
 combine = todo
@@ -487,3 +499,6 @@ instance Transform BlurMany where
 
 blurredSnowman = apply (BlurMany 2) exampleSnowman
 
+
+foo x = x + 2
+bar y = y + foo y 
