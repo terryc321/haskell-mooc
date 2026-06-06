@@ -181,7 +181,12 @@ blendColor (Color r1 g1 b1) (Color r2 g2 b2) =
    
 
 combine :: (Color -> Color -> Color) -> Picture -> Picture -> Picture
-combine = todo
+combine fblend (Picture f2)(Picture f3) = Picture f
+  where f c = fblend (f2 c) (f3 c) 
+
+-- matching Picture "TYPE" with constructor (Picture f)
+-- where f is function coordinate x y to color 
+-- ok -- passed 
 
 ------------------------------------------------------------------------------
 
