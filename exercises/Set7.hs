@@ -35,6 +35,7 @@ travel (Velocity v) (Time t) = Distance (v * t)
 
 -- ok - passed --- 
 
+
 ------------------------------------------------------------------------------
 -- Ex 2: let's implement a simple Set datatype. A Set is a list of
 -- unique elements. The set is always kept ordered.
@@ -431,17 +432,28 @@ True
 --     ==> "(3*(1+1))"
 --
 
-data Arithmetic = Todo
+-- recursive type 
+data Arithmetic = Add Arithmetic Arithmetic | Mult Arithmetic Arithmetic | Lit Integer
   deriving Show
 
 literal :: Integer -> Arithmetic
-literal = todo
+literal = Lit 
 
 operation :: String -> Arithmetic -> Arithmetic -> Arithmetic
-operation = todo
+operation "+" x y = Add x y
+operation "*" x y = Mult x y
 
 evaluate :: Arithmetic -> Integer
-evaluate = todo
+evaluate (Lit n)    = n
+evaluate (Add x y)  = evaluate x + evaluate y
+evaluate (Mult x y) = evaluate x * evaluate y
 
 render :: Arithmetic -> String
-render = todo
+render (Lit n)    = show n
+render (Add x y)  = "(" ++ render x ++ "+" ++ render y ++ ")"
+render (Mult x y) = "(" ++ render x ++ "*" ++ render y ++ ")"
+
+-- ok -- passed
+
+-- Set 7 completed
+
