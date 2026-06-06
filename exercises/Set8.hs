@@ -256,8 +256,20 @@ exampleCircle = fill red (circle 80 100 200)
 --        ["000000","ffffff","ffffff","ffffff","ffffff","000000"],
 --        ["000000","000000","000000","000000","000000","000000"]]
 
+insideRectangle :: Int -> Int -> Int -> Int -> Coord -> Bool
+insideRectangle x0 y0 w h (Coord x y) = let x1 = x0 + (w - 1)  --- exactly width and high
+                                            y1 = y0 + (h - 1)
+                                        in x >= x0 && x <= x1 && y >= y0 && y <= y1
+  
+
 rectangle :: Int -> Int -> Int -> Int -> Shape
-rectangle x0 y0 w h = todo
+rectangle x0 y0 w h = Shape (insideRectangle x0 y0 w h)
+
+-- this is just saying for some coordinate (Coord x y) it is of the shape rectangle if
+-- (x,y) falls within the bounds of the rectangle
+-- Shape f where f :: Coord -> Bool
+-- ok --- passed
+                          
 ------------------------------------------------------------------------------
 
 ------------------------------------------------------------------------------
@@ -273,10 +285,33 @@ rectangle x0 y0 w h = todo
 -- shape.
 
 union :: Shape -> Shape -> Shape
-union = todo
+union (Shape f) (Shape f2) = Shape f3
+  where f3 c = f c || f2 c 
+
+-- we use a shape by giving it a coordinate and expect either True or False whether
+-- the coord is `inside` the shape 
 
 cut :: Shape -> Shape -> Shape
-cut = todo
+cut (Shape f) (Shape f2) = Shape f3
+ where f3 c = (not (f2 c)) && f c
+
+{--
+
+cut takes two shapes - shape1 , shape2
+shape1 = (Shape f)
+shape1 uses function f to say whether a coordinate is in- shape1
+
+shape2 = (Shape f2)
+shape2 uses function f2 to say whether a coordinate is in- shape2
+
+if we want anywhere NOT inside shape1 we use (not (f1 c))
+if we want anywhere inside shape 2 we use (f2 c)
+combine them - we get the 'cut' we expected 
+--}
+
+-- ok -- passed 
+
+
 ------------------------------------------------------------------------------
 
 -- Here's a snowman, built using union from circles and rectangles.
@@ -304,7 +339,23 @@ exampleSnowman = fill white snowman
 --        ["000000","000000","000000"]]
 
 paintSolid :: Color -> Shape -> Picture -> Picture
-paintSolid color shape base = todo
+paintSolid color (Shape fs) (Picture fp) = (Picture f)
+  where f c = if fs c then color
+              else fp c
+
+{--
+this is saying ...
+have a shape with decision function fs
+have a picture with a color function fp
+if coordinate c is inside shape then return the colour called color
+otherwise pass coordinate c to the picture function fp and let picture function give me colour back
+
+nice way think about pictures as functions of coordinate to colour
+also opens up idea of an infinite picture - where colour determined by a mathematical function 
+--}
+
+-- ok  --- passed 
+  
 ------------------------------------------------------------------------------
 
 allWhite :: Picture
@@ -312,6 +363,7 @@ allWhite = solid white
 
 -- Here's a colorful version of the snowman example. See it by running:
 --   render exampleColorful 400 300 "colorful.png"
+-- this works after complete exercise 5 
 
 exampleColorful :: Picture
 exampleColorful = (paintSolid black hat . paintSolid red legs . paintSolid pink body) allWhite
@@ -349,7 +401,18 @@ stripes a b = Picture f
 --       ["000000","000000","000000","000000","000000"]]
 
 paint :: Picture -> Shape -> Picture -> Picture
-paint pat shape base = todo
+--paint pat shape base = todo
+paint (Picture fp) (Shape fs) (Picture fb) = (Picture f)
+  where f c = if fs c then fp c else fb c
+
+{--
+very much same kind of thinking , except now instead of a shape to colour - we have shape leading
+to a picture , if not on shape then pass to background picture to determine colour
+
+same idea of stacking cards 
+--}
+  
+
 ------------------------------------------------------------------------------
 
 -- Here's a patterned version of the snowman example. See it by running:
@@ -370,6 +433,23 @@ flipCoordXY (Coord x y) = (Coord y x)
 -- Flip a picture by switching x and y coordinates
 flipXY :: Picture -> Picture
 flipXY (Picture f) = Picture (f . flipCoordXY)
+
+
+flipCoordX :: Coord -> Coord
+flipCoordX (Coord x y) = (Coord (-x) y)
+
+-- Flip a picture by negating x coordinate 
+flipX :: Picture -> Picture
+flipX (Picture f) = Picture (f . flipCoordX)
+
+
+flipCoordY :: Coord -> Coord
+flipCoordY (Coord x y) = (Coord x (-y))
+
+-- Flip a picture by negating y coordinate 
+flipY :: Picture -> Picture
+flipY (Picture f) = Picture (f . flipCoordY)
+
 
 zoomCoord :: Int -> Coord -> Coord
 zoomCoord z (Coord x y) = Coord (div x z) (div y z)
@@ -412,19 +492,25 @@ xy = Picture f
 data Fill = Fill Color
 
 instance Transform Fill where
-  apply = todo
+  apply (Fill color) (Picture f) = Picture (\c -> color)
 
 data Zoom = Zoom Int
   deriving Show
 
 instance Transform Zoom where
-  apply = todo
+  apply (Zoom z) (Picture f) = Picture (f . zoomCoord z)    
 
 data Flip = FlipX | FlipY | FlipXY
   deriving Show
 
 instance Transform Flip where
-  apply = todo
+  apply FlipX  (Picture f) = Picture (f . flipCoordX)
+  apply FlipY  (Picture f) = Picture (f . flipCoordY)
+  apply FlipXY (Picture f) = Picture (f . flipCoordXY)
+
+-- this is really really nice 
+-- ok -- passed 
+
 ------------------------------------------------------------------------------
 
 ------------------------------------------------------------------------------
@@ -439,8 +525,13 @@ instance Transform Flip where
 data Chain a b = Chain a b
   deriving Show
 
-instance Transform (Chain a b) where
-  apply = todo
+instance (Transform a, Transform b) => Transform (Chain a b) where
+  apply (Chain a b) pic = apply a (apply b pic)
+
+--- needed to write that a and b both satisfy the Transform constraint
+--  i put (Transform a,b => ... ) oops
+
+--- ok -- passed   
 ------------------------------------------------------------------------------
 
 -- Now we can redefine largeVerticalStripes using the above Transforms.
