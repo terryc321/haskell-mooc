@@ -568,8 +568,20 @@ checkered = flipBlend largeVerticalStripes2
 data Blur = Blur
   deriving Show
 
+-- average of four neighbours up down left right and the pixel itself 
+
 instance Transform Blur where
-  apply = todo
+  apply Blur (Picture f) = Picture f2
+    where f2 (Coord x y) = let (Color r1 g1 b1) = f (Coord (x-1) y)
+                               (Color r2 g2 b2) = f (Coord (x+1) y)
+                               (Color r3 g3 b3) = f (Coord x (y-1))
+                               (Color r4 g4 b4) = f (Coord x (y+1))
+                               (Color r5 g5 b5) = f (Coord x y)                                
+                           in let avR  = (r1 + r2 + r3 + r4 + r5) `div` 5
+                                  avG  = (g1 + g2 + g3 + g4 + g5) `div` 5
+                                  avB  = (b1 + b2 + b3 + b4 + b5) `div` 5
+                              in Color avR avG avB
+                               
 ------------------------------------------------------------------------------
 
 ------------------------------------------------------------------------------
@@ -587,7 +599,11 @@ data BlurMany = BlurMany Int
   deriving Show
 
 instance Transform BlurMany where
-  apply = todo
+  apply (BlurMany 0) pic = pic
+  apply (BlurMany n) pic = apply (BlurMany (n - 1)) (apply Blur pic)
+
+-- apply blur once if n > 0 , when n is 0 - just return the picture pic 
+  
 ------------------------------------------------------------------------------
 
 -- Here's a blurred version of our original snowman. See it by running
@@ -595,6 +611,3 @@ instance Transform BlurMany where
 
 blurredSnowman = apply (BlurMany 2) exampleSnowman
 
-
-foo x = x + 2
-bar y = y + foo y 
