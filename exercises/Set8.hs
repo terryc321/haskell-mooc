@@ -24,8 +24,10 @@ data Color = Color Int Int Int
 
 getRed :: Color -> Int
 getRed (Color r _ _) = r
+
 getGreen :: Color -> Int
 getGreen (Color _ g _) = g
+
 getBlue :: Color -> Int
 getBlue (Color _ _ b) = b
 

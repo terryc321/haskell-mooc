@@ -1,5 +1,75 @@
 # Haskell MOOC
 
+# Completed first half course ! 
+
+finishing on using type classes with image library uses idea that an image is a function from coordinate to color , colors specified as r g b 0 to 255 , so we can have infinite image , since its described by a function that can just say otherwise black 
+
+```
+some colors 
+
+data Color = Color Int Int Int
+  deriving (Show,Eq)
+
+getRed :: Color -> Int
+getRed (Color r _ _) = r
+
+getGreen :: Color -> Int
+getGreen (Color _ g _) = g
+
+getBlue :: Color -> Int
+getBlue (Color _ _ b) = b
+
+-- Here are some colors
+
+black :: Color
+black = Color 0 0 0
+
+white :: Color
+white = Color 255 255 255
+
+pink :: Color
+pink = Color 255 105 180
+
+red :: Color
+red = Color 255 0 0
+
+yellow :: Color
+yellow = Color 255 240 0
+
+-- A coordinate is two Ints, x and y. In this project, the (0,0)
+-- coordinate is in the top left corner of the image. The x coordinate
+-- increases to the right, and the y coordinate increases down.
+
+data Coord = Coord Int Int
+
+-- A Picture is a wrapper for a function of type Coord -> Color.
+-- The function takes in x and y coordinates and returns a color.
+
+data Picture = Picture (Coord -> Color)
+```
+
+Truely remarkable achievement to be able to think about images like this . 
+
+
+![Colorful](exercises/colorful.png)
+
+example1 
+
+![Example1](exercises/example1.png)
+
+a snowman ! 
+
+![Snowman](exercises/snowman.png)
+
+a blurred snowman ! 
+
+![Blurred Snowman](exercises/blurred.png)
+
+
+
+
+
+
 <p align="center"><img alt="Course logo" src="img/haskell-mooc-logo.svg" width="400" align="center"></p>
 
 University of Helsinki
