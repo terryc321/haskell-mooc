@@ -143,30 +143,46 @@ sumSuccess xs = foldr (trackSuccess) (Left "no data") xs
 --   isOpen (open "0000" (lock (changeCode "0000" (open "1234" aLock)))) ==> True
 --   isOpen (open "1234" (lock (changeCode "0000" (open "1234" aLock)))) ==> False
 
-data Lock = LockUndefined
-  deriving Show
+
+-- a lock has a code combination attached to it
+-- even an unlocked lock carries that combination with it 
+data Lock = Unlock String | Lock String
+  deriving Show 
 
 -- aLock should be a locked lock with the code "1234"
+-- this just an example lock
+-- ?? mean change the code of an open lock ignoring current code
+-- aLock is a generic give me a lock locked with code 1234
 aLock :: Lock
-aLock = todo
+aLock = Lock "1234"
 
 -- isOpen returns True if the lock is open
 isOpen :: Lock -> Bool
-isOpen = todo
+isOpen (Unlock s) = True
+isOpen _          = False 
 
 -- open tries to open the lock with the given code. If the code is
 -- wrong, nothing happens.
 open :: String -> Lock -> Lock
-open = todo
+open code (Lock lockCode) = if code == lockCode then Unlock code else Lock lockCode
+open code lock = lock
 
 -- lock closes a lock. If the lock is already closed, nothing happens.
+-- a lock that is unlocked becomes locked with its own code
+-- otherwise ignore
 lock :: Lock -> Lock
-lock = todo
+lock (Unlock s) = Lock s 
+lock x = x  
 
 -- changeCode changes the code of an open lock. If the lock is closed,
 -- nothing happens.
+-- given unlocked lock with its own code - make an unlocked lock with code s instead
+-- otherwise ignore 
 changeCode :: String -> Lock -> Lock
-changeCode = todo
+changeCode s (Unlock _) = Unlock s
+changeCode _ lock = lock 
+
+-- ok -- passed 
 
 ------------------------------------------------------------------------------
 -- Ex 7: Here's a type Text that just wraps a String. Implement an Eq
@@ -184,9 +200,19 @@ changeCode = todo
 data Text = Text String
   deriving Show
 
+-- remove all spaces and newlines from string
+removeNoise xs =
+  let ws = \c -> c == '\n' || c == ' '
+  in filter (not . ws) xs
+
+instance Eq Text where
+  (==) (Text s) (Text s2) = removeNoise s == removeNoise s2
+  (/=) t        t2        = not (t == t2)
+
+-- ok -- passed --- 
 
 ------------------------------------------------------------------------------
--- Ex 8: We can represent functions or mappings as lists of pairs.
+-- ex 8: We can represent functions or mappings as lists of pairs.
 -- For example the list [("bob",13),("mary",8)] means that "bob" maps
 -- to 13 and "mary" maps to 8.
 --
