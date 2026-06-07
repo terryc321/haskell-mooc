@@ -25,8 +25,17 @@ import Mooc.Todo
 -- return "Holy moly!" if it is under 10, return "Piece of cake!".
 -- Otherwise return "Ok."
 
+reactionToWorkload total
+  | total > 100 = "Holy moly!"
+  | total < 10 = "Piece of cake!"
+  | otherwise = "Ok."
+
+
 workload :: Int -> Int -> String
-workload nExercises hoursPerExercise = todo
+--workload nExercises hoursPerExercise = todo
+workload nExercises hoursPerExercise = reactionToWorkload (nExercises * hoursPerExercise)
+
+-- ok -- passed 
 
 ------------------------------------------------------------------------------
 -- Ex 2: Implement the function echo that builds a string like this:
@@ -39,7 +48,11 @@ workload nExercises hoursPerExercise = todo
 -- Hint: use recursion
 
 echo :: String -> String
-echo = todo
+echo z = case z of
+           [] -> []
+           (_:t) -> z ++ ", " ++ (echo t)
+
+-- ok -- passed 
 
 ------------------------------------------------------------------------------
 -- Ex 3: A country issues some banknotes. The banknotes have a serial
@@ -51,8 +64,17 @@ echo = todo
 -- Given a list of bank note serial numbers (strings), count how many
 -- are valid.
 
+validSerial :: String -> Bool
+validSerial s = let third = s !! (3-1)
+                    fifth = s !! (5-1)
+                    fourth = s !! (4-1)
+                    sixth = s !! (6-1)
+                in third == fifth || fourth == sixth 
+
 countValid :: [String] -> Int
-countValid = todo
+countValid xs = length (filter validSerial xs)
+
+-- ok -- passed 
 
 ------------------------------------------------------------------------------
 -- Ex 4: Find the first element that repeats two or more times _in a
@@ -64,7 +86,12 @@ countValid = todo
 --   repeated [1,2,1,2,3,3] ==> Just 3
 
 repeated :: Eq a => [a] -> Maybe a
-repeated = todo
+repeated [] = Nothing
+repeated [ _ ] = Nothing
+repeated (x:y:t) = if x == y then Just x else repeated (y:t)
+
+-- ok -- passed 
+
 
 ------------------------------------------------------------------------------
 -- Ex 5: A laboratory has been collecting measurements. Some of the
@@ -85,8 +112,16 @@ repeated = todo
 --   sumSuccess []
 --     ==> Left "no data"
 
+trackSuccess :: Either String Int -> Either String Int -> Either String Int
+trackSuccess (Right n) (Left _)  = Right n
+trackSuccess (Right n) (Right j) = Right (n + j)
+trackSuccess  _        acc       = acc
+
 sumSuccess :: [Either String Int] -> Either String Int
-sumSuccess = todo
+sumSuccess xs = foldr (trackSuccess) (Left "no data") xs
+
+-- ok -- passed 
+       
 
 ------------------------------------------------------------------------------
 -- Ex 6: A combination lock can either be open or closed. The lock
