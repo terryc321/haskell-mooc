@@ -242,8 +242,18 @@ instance Eq Text where
 --     compose [("a","alpha"),("b","beta"),("c","gamma")] [("alpha",1),("beta",2),("omicron",15)]
 --       ==> [("a",1),("b",2)]
 
+-- if the 1st is empty list , hows it going to get b type to lookup in 2nd 
+-- 
+-- 
+--                           1st        2nd       the result                        
 compose :: (Eq a, Eq b) => [(a,b)] -> [(b,c)] -> [(a,c)]
-compose = todo
+compose [] _ = []
+compose ((key,val):t) xs = case lookup val xs of
+                             Just val2 -> (key,val2) : compose t xs
+                             Nothing -> compose t xs
+                             
+-- just to notice (h:t) pattern the head is a pair (key,value) 
+--- ok -- passed -- 
 
 ------------------------------------------------------------------------------
 -- Ex 9: Reorder a list using a list of indices.
@@ -287,4 +297,50 @@ multiply :: Permutation -> Permutation -> Permutation
 multiply p q = map (\i -> p !! (q !! i)) (identity (length p))
 
 permute :: Permutation -> [a] -> [a]
-permute = todo
+permute p xs = permute2 (identity (length p)) p xs xs
+
+
+--- ai slop gave me replaceNth 
+replaceNth :: Int -> a -> [a] -> [a]
+replaceNth n x xs = take n xs ++ [x] ++ drop (n + 1) xs
+
+
+--- cycle over 0..n-1 , exact index from p , lookup that in xs , make change into rs
+--- when done cycling - return resultant rs
+-- ch the character 
+-- fi final index 
+permute2 []    p xs rs = rs
+permute2 (h:t) p xs rs = let ch = xs !! h
+                             fi = p !! h
+                         in let rs2 = replaceNth fi ch rs
+                            in permute2 t p xs rs2
+
+                               
+
+{--
+
+tricky to understand exactly what was being asked of me 
+
+*** Failed! Falsified (after 1 test):
+permute [3,5,2,4,1,0] "uzrvqp"
+  Expected: "pqruvz"
+  Was: "vprqzu"
+
+[0,1,2,3,4,5] 
+[3,5,2,4,1,0]
+0th char to 4th
+1th char to 5th
+2th char to 2th 
+
+
+*** Failed! Falsified (after 2 tests):
+permute (multiply p q) xs == permute p (permute q xs) failed:
+  p was [0,4,5,2,1,3]
+  q was [5,3,4,2,1,0], and
+  xs was "fedcba";
+  permute (multiply p q) xs evaluated to "cdeabf",
+  while permute p (permute q xs) evaluated to "aefbcd"
+
+--}
+
+-- ok -- passed 
