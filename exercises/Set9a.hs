@@ -31,6 +31,7 @@ reactionToWorkload total
   | otherwise = "Ok."
 
 
+
 workload :: Int -> Int -> String
 --workload nExercises hoursPerExercise = todo
 workload nExercises hoursPerExercise = reactionToWorkload (nExercises * hoursPerExercise)

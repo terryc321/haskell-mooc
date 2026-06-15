@@ -439,6 +439,26 @@ step sz sk =
 -- After this, it's just a matter of calling `finish n [(1,1)]` to
 -- solve the n queens problem.
 
+isSolvedRec :: Stack -> Bool
+isSolvedRec [] = True
+isSolvedRec (h : t) = if danger h t then False else isSolvedRec t 
+
+isSolved :: Size -> Stack -> Bool
+isSolved sz sk
+ | length sk == sz = isSolvedRec sk 
+ | otherwise = False 
+
+
+debug :: Size -> Stack -> Int -> IO () 
+debug sz sk i = do putStrLn $ "i= " ++ show i ++ " : sk => " ++ show sk
+                   if isSolved sz sk
+                     then do putStrLn $ "a solution was found" 
+                             putStrLn $ prettyPrint sz sk ++ "\n\n"
+                   else putStr $ ""
+                   debug sz (step sz sk) (i + 1)
+                   
+
+
 finish :: Size -> Stack -> Stack
 finish sz sk =
   let len = length sk
@@ -449,3 +469,5 @@ finish sz sk =
 
 solve :: Size -> Stack
 solve n = finish n [(1,1)]
+
+

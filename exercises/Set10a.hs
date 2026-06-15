@@ -16,7 +16,10 @@ import Mooc.Todo
 --   take 10 (doublify [0..])  ==>  [0,0,1,1,2,2,3,3,4,4]
 
 doublify :: [a] -> [a]
-doublify = todo
+doublify [] = []
+doublify (h:t) = h : h : doublify t
+
+--ok-passed 
 
 ------------------------------------------------------------------------------
 -- Ex 2: Implement the function interleave that takes two lists and
@@ -37,7 +40,12 @@ doublify = todo
 --   take 10 (interleave [1..] (repeat 0)) ==> [1,0,2,0,3,0,4,0,5,0]
 
 interleave :: [a] -> [a] -> [a]
-interleave = todo
+interleave [] t = t
+interleave s [] = s
+interleave (m:n) (p:q) = m : p : interleave n q
+
+-- ok -passed 
+
 
 ------------------------------------------------------------------------------
 -- Ex 3: Deal out cards. Given a list of players (strings), and a list
@@ -56,7 +64,17 @@ interleave = todo
 -- Hint: remember the functions cycle and zip?
 
 deal :: [String] -> [String] -> [(String,String)]
-deal = todo
+deal [] ys = []
+deal xs [] = []
+deal xs ys = deal2 xs ys xs
+
+deal2 :: [String] -> [String] -> [String] -> [(String,String)]
+deal2 [] ys xs = deal xs ys
+deal2 xs [] _ = []
+deal2 (a:b) (c:d) xs = (c,a) : deal2 b d xs
+
+-- ok -passed
+
 
 ------------------------------------------------------------------------------
 -- Ex 4: Compute a running average. Go through a list of Doubles and
@@ -72,9 +90,18 @@ deal = todo
 --   take 10 (averages [1..]) ==> [1.0,1.5,2.0,2.5,3.0,3.5,4.0,4.5,5.0,5.5]
 
 
-
 averages :: [Double] -> [Double]
-averages = todo
+averages [] = []
+averages xs = let tot = 0.0
+                  nitem = 1
+              in averages2 xs nitem tot
+
+-- list want to average , item count , double total , can then produce a a running average
+averages2 :: [Double] -> Double -> Double -> [Double]
+averages2 [] _ _ = []
+averages2 (h:t) nitem tot = ((h+tot)/nitem) : averages2 t (nitem + 1) (tot + h) 
+
+-- ok -- passed 
 
 ------------------------------------------------------------------------------
 -- Ex 5: Given two lists, xs and ys, and an element z, generate an
@@ -92,7 +119,9 @@ averages = todo
 --   take 10 (alternate [1,2] [3,4,5] 0) ==> [1,2,0,3,4,5,0,1,2,0]
 
 alternate :: [a] -> [a] -> a -> [a]
-alternate xs ys z = todo
+alternate xs ys z = xs ++ [z] ++ ys ++ [z] ++ (alternate xs ys z)
+
+-- ok -- passed --
 
 ------------------------------------------------------------------------------
 -- Ex 6: Check if the length of a list is at least n. Make sure your
@@ -104,7 +133,10 @@ alternate xs ys z = todo
 --   lengthAtLeast 10 [0..]  ==> True
 
 lengthAtLeast :: Int -> [a] -> Bool
-lengthAtLeast = todo
+lengthAtLeast n xs = length (take n xs) >= n
+
+-- ok -- passed 
+
 
 ------------------------------------------------------------------------------
 -- Ex 7: The function chunks should take in a list, and a number n,
@@ -122,7 +154,12 @@ lengthAtLeast = todo
 --   take 4 (chunks 3 [0..]) ==> [[0,1,2],[1,2,3],[2,3,4],[3,4,5]]
 
 chunks :: Int -> [a] -> [[a]]
-chunks = todo
+chunks _ [] = []
+chunks n (h:t) = if lengthAtLeast n (h:t) then take n (h:t) : chunks n t
+                 else []
+                      
+-- ok -- passed 
+
 
 ------------------------------------------------------------------------------
 -- Ex 8: Define a newtype called IgnoreCase, that wraps a value of
@@ -138,7 +175,22 @@ chunks = todo
 --   ignorecase "abC" == ignorecase "ABc"  ==>  True
 --   ignorecase "acC" == ignorecase "ABc"  ==>  False
 
-ignorecase = todo
+newtype IgnoreCase = IgnoreCase String
+
+instance Eq IgnoreCase where
+  (==) (IgnoreCase s1) (IgnoreCase s2) = (map toLower s1) == (map toLower s2)
+  (/=) p1 p2 = not (p1 == p2)
+
+ignorecase :: String -> IgnoreCase 
+ignorecase s = IgnoreCase s 
+
+{--
+not really sure on purpose of newtype - its more restricted can only take one constructor -- data will
+do exactly the same 
+
+-- ok -- passed 
+--}
+
 
 ------------------------------------------------------------------------------
 -- Ex 9: Here's the Room type and some helper functions from the
