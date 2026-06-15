@@ -22,7 +22,17 @@ import Mooc.Todo
 --   False ||| undefined ==> an error!
 
 (|||) :: Bool -> Bool -> Bool
-x ||| y = todo
+x ||| y = if y then True else x
+
+-- False ||| False = False
+-- True ||| False = True
+-- _ ||| True = True
+
+{--
+not sure what forcing was , we evaluate right hand side y  
+
+--}
+-- ok -- passed 
 
 ------------------------------------------------------------------------------
 -- Ex 2: Define the function boolLength, that returns the length of a
@@ -36,7 +46,14 @@ x ||| y = todo
 --   length [False,undefined] ==> 2
 
 boolLength :: [Bool] -> Int
-boolLength xs = todo
+boolLength [] = 0
+boolLength (True:t) = 1 + boolLength t
+boolLength (False:t) = 1 + boolLength t
+
+
+-- we just leave unexplored cases to error out ?
+-- ok -- passed 
+
 
 ------------------------------------------------------------------------------
 -- Ex 3: Define the function validate which, given a predicate and a
@@ -50,7 +67,9 @@ boolLength xs = todo
 --   validate (\x -> undefined) 3  ==>  an error!
 
 validate :: (a -> Bool) -> a -> a
-validate predicate value = todo
+validate predicate value = if predicate value then value else value 
+
+-- ok -- passed
 
 ------------------------------------------------------------------------------
 -- Ex 4: Even though we can't implement the generic seq function
@@ -84,10 +103,19 @@ class MySeq a where
   myseq :: a -> b -> b
 
 instance MySeq Bool where
-  myseq = todo
+  myseq True y = y
+  myseq False y = y 
 
 instance MySeq Int where
-  myseq = todo
-
+  myseq x y = y
+ 
 instance MySeq [a] where
-  myseq = todo
+  myseq xs y = y
+    
+{--
+i cant see the purpose to this at all since whole point of typed programming is that it will not crash at runtime
+
+its overly clever for no real purpose - what is the learning point here ? 
+--}
+
+
