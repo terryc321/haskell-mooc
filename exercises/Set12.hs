@@ -260,16 +260,31 @@ data Tree a = Leaf | Node a (Tree a) (Tree a)
   deriving Show
 
 instance Functor Tree where
-  fmap = todo
+  fmap f Leaf = Leaf
+  fmap f (Node x y z) = Node (f x) (fmap f y) (fmap f z)
+  
 
 sumTree :: Monoid m => Tree m -> m
-sumTree = todo
+--sumTree Leaf = mempty
+--sumTree (Node x y z) = sumTree y <> x <> sumTree z
+-- alternatively we can use mconcat instead of infix <> operator
+
+sumTree Leaf = mempty
+sumTree (Node x y z) = let sy = sumTree y
+                           sz = sumTree z
+                       in mconcat [sy,x ,sz]
 
 instance Foldable Tree where
   foldMap f t = sumTree (fmap f t)
+
+
+-- mempty
+-- mconcat 
 
 ------------------------------------------------------------------------------
 -- Bonus! If you enjoyed the two last exercises (not everybody will),
 -- you'll like the `loeb` function:
 --
 --   https://github.com/quchen/articles/blob/master/loeb-moeb.md
+
+-- ok -- all completed
