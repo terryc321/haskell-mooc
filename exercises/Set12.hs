@@ -7,6 +7,7 @@ import Data.Monoid
 
 import Mooc.Todo
 
+-- before we get too weirded out this is just MAP function -- generalized called fmap 
 
 ------------------------------------------------------------------------------
 -- Ex 1: Implement the function incrementAll that takes a functor
@@ -17,7 +18,15 @@ import Mooc.Todo
 --   incrementAll (Just 3.0)  ==>  Just 4.0
 
 incrementAll :: (Functor f, Num n) => f n -> f n
-incrementAll x = todo
+incrementAll x = fmap (+ 1) x
+
+{-- fmap is a structure preserving map but generalised generalized
+-- does this mean anything ?
+
+ok -- passed 
+--}
+
+
 
 ------------------------------------------------------------------------------
 -- Ex 2: Sometimes one wants to fmap multiple levels deep. Implement
@@ -38,10 +47,12 @@ incrementAll x = todo
 --       ==> Just [Just True,Nothing]
 
 fmap2 :: (Functor f, Functor g) => (a -> b) -> f (g a) -> f (g b)
-fmap2 = todo
+fmap2 f expr = fmap (\x -> fmap f x) expr  
 
 fmap3 :: (Functor f, Functor g, Functor h) => (a -> b) -> f (g (h a)) -> f (g (h b))
-fmap3 = todo
+fmap3 f expr = fmap (\x -> fmap2 f x ) expr 
+
+-- ok -- passed
 
 ------------------------------------------------------------------------------
 -- Ex 3: below you'll find a type Result that works a bit like Maybe,
@@ -54,7 +65,18 @@ data Result a = MkResult a | NoResult | Failure String
   deriving Show
 
 instance Functor Result where
-  fmap f result = todo
+  fmap f NoResult = NoResult
+  fmap f (Failure s) = Failure s
+  fmap f (MkResult a) = MkResult (f a)
+
+{--
+this is starting to get worrying
+we are able to pass the type checker , pass tests , we have no idea what it means 
+-- ok -- passed
+--}
+
+
+
 
 ------------------------------------------------------------------------------
 -- Ex 4: Here's a reimplementation of the Haskell list type. You might
@@ -68,6 +90,16 @@ data List a = Empty | LNode a (List a)
   deriving Show
 
 instance Functor List where
+  fmap f Empty = Empty
+  fmap f (LNode x y) = LNode (f x) (fmap f y)
+
+{-- again uneasy feeling why it passed -- why cant we talk about List inside
+instance Functor List where
+  fmap f Empty = Empty
+  fmap f (LNode x (List y)) = LNode (f x) (fmap f (List y))  <<== wont work cant talk about List ? why not 
+
+--} 
+-- ok -- passed   
 
 ------------------------------------------------------------------------------
 -- Ex 5: Here's another list type. This time every node contains two
@@ -82,6 +114,11 @@ data TwoList a = TwoEmpty | TwoNode a a (TwoList a)
   deriving Show
 
 instance Functor TwoList where
+  fmap f TwoEmpty = TwoEmpty
+  fmap f (TwoNode x y z) = TwoNode (f x) (f y) (fmap f z )
+
+-- ok -- passed
+
 
 ------------------------------------------------------------------------------
 -- Ex 6: Count all occurrences of a given element inside a Foldable.
@@ -94,7 +131,10 @@ instance Functor TwoList where
 --   count 'c' (Just 'c') ==> 1
 
 count :: (Eq a, Foldable f) => a -> f a -> Int
-count = todo
+count e xs = foldr (\n acc -> if n == e then acc + 1 else acc) 0 xs
+
+-- ok -- passed 
+
 
 ------------------------------------------------------------------------------
 -- Ex 7: Return all elements that are in two Foldables, as a list.
@@ -105,7 +145,7 @@ count = todo
 --   inBoth Nothing [3]    ==> []
 
 inBoth :: (Foldable f, Foldable g, Eq a) => f a -> g a -> [a]
-inBoth = todo
+inBoth x y = todo 
 
 ------------------------------------------------------------------------------
 -- Ex 8: Implement the instance Foldable List.
