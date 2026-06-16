@@ -182,8 +182,55 @@ safeIndex :: [a] -> Int -> Maybe a
 safeIndex xs n = if n >= 0 && n < length xs then Just (xs !! n) else Nothing
 
 
+{--
+-- working solution -- check we can get a solution regardless of how we get there 
 selectSum :: Num a => [a] -> [Int] -> Maybe a
-selectSum xs is = todo
+selectSum ns [] = Just 0
+selectSum ns (h:t) = let vhead = safeIndex ns h
+                     in case vhead of
+                          Just n -> let vtail = selectSum ns t
+                                    in case vtail of
+                                         Just n2 -> Just (n + n2)
+                                         Nothing -> Nothing
+                          Nothing -> Nothing
+--}                          
+
+-- rewrite 3 -- accepted answer
+-- safeIndex ns h will return Just n or Nothing , the ?> will strip Just out pass vhead <<-- n only 
+selectSum :: Num a => [a] -> [Int] -> Maybe a
+selectSum ns [] = Just 0
+selectSum ns (h:t) = safeIndex ns h
+                     ?>
+                     (\vhead -> selectSum ns t
+                                ?>
+                                (\vtail -> Just (vhead + vtail)))
+                     
+
+{--
+-- rewrite 2 -- accepted answer also 
+selectSum :: Num a => [a] -> [Int] -> Maybe a
+selectSum ns [] = Just 0
+selectSum ns (h:t) = let vhead = safeIndex ns h
+                         vtail = selectSum ns t
+                     in vhead
+                        ?>
+                        (\v -> vtail
+                               ?>
+                               (\v2 -> Just (v + v2)))
+--}
+                        
+
+
+{--
+-- not working 
+selectSum ns [] = Just 0
+selectSum ns (h:t) = safeIndex ns h
+                       ?> (\n -> selectSum ns t
+                                 ?>
+                                 (\r -> case (n,r) of
+                                          (Just n2,Just r2) -> Just (n2 + r2)
+                                          _ -> Nothing))
+--}                       
 
 ------------------------------------------------------------------------------
 -- Ex 4: Here is the Logger monad from the course material. Implement
