@@ -28,6 +28,7 @@ import Examples.Bank
 -- functions split, checkNumber and checkCapitals so that readNames
 -- works correctly.
 
+-- reimplementation of >>= bind for Maybe monad 
 (?>) :: Maybe a -> (a -> Maybe b) -> Maybe b
 Nothing ?> _ = Nothing   -- In case of failure, propagate failure
 Just x  ?> f = f x       -- In case of success, run the next computation
@@ -40,6 +41,8 @@ readNames s =
   checkNumber
   ?>
   checkCapitals
+  ?>
+  checkCapitals
 
 -- split should split a string into two words. If the input doesn't
 -- contain a space, Nothing should be returned
@@ -47,19 +50,41 @@ readNames s =
 -- (NB! There are obviously other corner cases like the inputs " " and
 -- "a b c", but you don't need to worry about those here)
 split :: String -> Maybe (String,String)
-split = todo
+split str = case elemIndex ' ' str of
+              Just n -> let (a,b) = splitAt n str
+                        in Just (a, leftTrim b)
+              Nothing -> Nothing 
 
 -- checkNumber should take a pair of two strings and return them
 -- unchanged if they don't contain numbers. Otherwise Nothing is
 -- returned.
 checkNumber :: (String, String) -> Maybe (String, String)
-checkNumber = todo
+checkNumber (str1,str2) = let h1 = hasDigit str1
+                              h2 = hasDigit str2
+                          in if h1 then Nothing else if h2 then Nothing else Just (str1,str2)
 
 -- checkCapitals should take a pair of two strings and return them
 -- unchanged if both start with a capital letter. Otherwise Nothing is
 -- returned.
 checkCapitals :: (String, String) -> Maybe (String, String)
-checkCapitals (for,sur) = todo
+checkCapitals (for,sur) = let h1 = isFirstLetterCapital for
+                              h2 = isFirstLetterCapital sur
+                          in if h1 && h2 then Just (for,sur) else Nothing
+
+
+-- to help with split 
+leftTrim :: String -> String
+leftTrim = dropWhile (== ' ')
+
+-- checkNumber contains a digit character you mean ? not clear .
+hasDigit :: String -> Bool
+hasDigit = any isDigit
+
+isFirstLetterCapital :: String -> Bool
+isFirstLetterCapital [] = False
+isFirstLetterCapital (c:_) = isUpper c
+
+-- ok -- passed 
 
 ------------------------------------------------------------------------------
 -- Ex 2: Given a list of players and their scores (as [(String,Int)]),
@@ -85,8 +110,58 @@ checkCapitals (for,sur) = todo
 --   winner [("a",1),("b",1)] "a" "b"
 --     ==> Just "a"
 
+
+
 winner :: [(String,Int)] -> String -> String -> Maybe String
-winner scores player1 player2 = todo
+{--
+winner scores player1 player2 = let look1 = lookup player1 scores
+                                    look2 = lookup player2 scores
+                                in case (look1,look2) of
+                                     (Just n1, Just n2) -> if n1 >= n2 then Just player1 else Just player2
+                                     _ -> Nothing
+
+for a chaining solution ?> using modified bind >>= operator we need a uniform datastructure both players can use 
+last element passed to procedure is the result from previous chain i guess
+
+notice the chain 
+
+Just scores
+?>
+ scores is passed into * procedure *
+
+
+
+winner scores player1 player2 = Just scores
+                                ?>
+                                (\x -> lookupPlayers player1 player2 x)
+
+lookupPlayers :: String -> String -> [(String,Int)] -> Maybe String 
+lookupPlayers player1 player2 scores = let look1 = lookup player1 scores
+                                           look2 = lookup player2 scores
+                                       in case (look1,look2) of
+                                            (Just n1, Just n2) -> if n1 >= n2 then Just player1 else Just player2
+                                            _ -> Nothing
+
+--}
+
+winner scores player1 player2 = lookup player1 scores
+                                ?>
+                                (\p1 -> lookup player2 scores
+                                        ?>
+                                        (\p2 -> if p1 >= p2 then Just player1 else Just player2))
+
+          
+
+{--
+winner scores player1 player2 = lookup player1 scores
+                                ?> (\x -> lookup player2 scores
+                                     ?> Just player2)
+
+--}
+
+                                     
+-- originally had n1 > n2 but failed test so put n1 >= n2
+-- ok -- passed 
 
 ------------------------------------------------------------------------------
 -- Ex 3: given a list of indices and a list of values, return the sum
@@ -102,6 +177,10 @@ winner scores player1 player2 = todo
 --    Just 19
 --  selectSum [0..10] [4,6,9,20]
 --    Nothing
+
+safeIndex :: [a] -> Int -> Maybe a
+safeIndex xs n = if n >= 0 && n < length xs then Just (xs !! n) else Nothing
+
 
 selectSum :: Num a => [a] -> [Int] -> Maybe a
 selectSum xs is = todo
