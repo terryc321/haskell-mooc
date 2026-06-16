@@ -198,9 +198,13 @@ runFun :: Fun a -> Int -> a
 runFun (Fun f) x = f x
 
 instance Functor Fun where
-  fmap f (Fun g) =  
+  fmap f g = Fun (\x -> f $ runFun g x)
 
-
+-- again one it passes the type checker
+-- its mostly right 
+-- ok -- passed   
+  
+  
 ------------------------------------------------------------------------------
 -- Ex 11: (Tricky!) You'll find the binary tree type from Set 5b
 -- below. We'll implement a `Foldable` instance for it!
