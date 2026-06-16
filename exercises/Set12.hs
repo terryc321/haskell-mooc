@@ -145,7 +145,11 @@ count e xs = foldr (\n acc -> if n == e then acc + 1 else acc) 0 xs
 --   inBoth Nothing [3]    ==> []
 
 inBoth :: (Foldable f, Foldable g, Eq a) => f a -> g a -> [a]
-inBoth x y = todo 
+inBoth fa fb = let x = toList fa
+                   y = toList fb
+               in filter (\ex -> elem ex y) x
+
+-- ok -- passed                   
 
 ------------------------------------------------------------------------------
 -- Ex 8: Implement the instance Foldable List.
@@ -158,7 +162,14 @@ inBoth x y = todo
 --   length (LNode 1 (LNode 2 (LNode 3 Empty))) ==> 3
 
 instance Foldable List where
-  foldr = todo
+  foldr f val Empty = val
+  foldr f val (LNode x y) = let val2 = foldr f val y
+                            in f x val2
+
+-- more like a game of fitting jigsaw together
+-- , type checker saying if piece fits or not                                
+-- ok -- passed                                
+                               
 
 ------------------------------------------------------------------------------
 -- Ex 9: Implement the instance Foldable TwoList.
@@ -168,7 +179,11 @@ instance Foldable List where
 --   length (TwoNode 0 1 (TwoNode 2 3 TwoEmpty)) ==> 4
 
 instance Foldable TwoList where
-  foldr = todo
+  foldr f val TwoEmpty = val
+  foldr f val (TwoNode x y z) = let val2 = foldr f val z
+                                in f x (f y val2)
+                                   
+-- ok -- passed   
 
 ------------------------------------------------------------------------------
 -- Ex 10: (Tricky!) Fun a is a type that wraps a function Int -> a.
@@ -183,6 +198,8 @@ runFun :: Fun a -> Int -> a
 runFun (Fun f) x = f x
 
 instance Functor Fun where
+  fmap f (Fun g) =  
+
 
 ------------------------------------------------------------------------------
 -- Ex 11: (Tricky!) You'll find the binary tree type from Set 5b
